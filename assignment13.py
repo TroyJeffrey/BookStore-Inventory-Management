@@ -1,0 +1,224 @@
+# Troy Amegashuie
+# April 30, 2020
+# Assignment 13
+# SQLite Database
+
+import sqlite3
+from sqlite3 import Error
+
+def create_connection(path):
+    conn = None
+    try:
+        conn = sqlite3.connect(path)
+        print("Connection to SQLite DB successful")
+    except Error as e:
+        print(f"The error '{e}' occurred")
+
+    return conn
+
+print("Connect to SQLite database:")
+connection = create_connection("Assignment13.db")
+
+
+def execute_query(connection, query):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(query)
+        connection.commit()
+        print("Query executed successfully")
+    except Error as e:
+        print(f"The error '{e}' occurred")
+
+
+def execute_read_query(connection, query):
+    cursor = connection.cursor()
+    result = None
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    except Error as e:
+        print(f"The error '{e}' occurred")
+
+
+create_customer_table = """
+CREATE TABLE IF NOT EXISTS customer (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  first TEXT NOT NULL,
+  last TEXT NOT NULL,
+  address TEXT NOT NULL,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  zip TEXT NOT NULL
+);
+"""
+
+
+print("\nRun the query to create the customer table:")
+execute_query(connection, create_customer_table)
+
+create_book_table = """
+CREATE TABLE IF NOT EXISTS book (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  author TEXT NOT NULL,
+  isbn INTEGER NOT NULL,
+  edition INTEGER NOT NULL,
+  price INTEGER NOT NULL,
+  publisher TEXT NOT NULL
+);
+"""
+
+print("\nRun the query to create the book table:")
+execute_query(connection, create_book_table)
+
+option = 0
+
+while option != 3:
+    print("\nWelcome to your Database Main Menu.")
+    print("1. Customers")
+    print("2. Books")
+    print("3. Exit Program")
+    choice = int(input("\n>"))
+
+    if choice == 1:
+        customer_menu = 0
+        while customer_menu != 5:
+            print("\nHere is your Customer Menu. What would you like to do?")
+            print("1. Add a new customer")
+            print("2. Modify an existing customer")
+            print("3. Print a list of all customers")
+            print("4. Delete a customer")
+            print("5. Return to Main Menu")
+            customer_choice = int(input("\n>"))
+
+            if customer_choice == 1:
+                # String holds the query to add data to the table
+                print("Please enter the details for the customer you want to add:")
+                first_name = input("First name : \n>")
+                last_name = input("Last name : \n>")
+                street_address = input("street address : \n>")
+                city = input("city : \n>")
+                state = input("state : \n>")
+                zip_code = input("zip code : \n>")
+
+                create_customer = f"""
+                INSERT INTO
+                  customer(first, last, address, city, state, zip)
+                VALUES
+                  ('{first_name}', '{last_name}', '{street_address}', '{city}', '{state}', '{zip_code}')
+                   """
+                execute_query(connection, create_customer)
+
+                print(f"\n{first_name} {last_name} has been added to the Customer table")
+
+            elif customer_choice == 2:
+                print("Please enter the details for the customer you want to modify.")
+                modify = input("Field to be modified (first, last, address, city, state, zip) : \n>")
+                value = input("What specific value are you modifying? (ex. Smith) : \n>")
+                modified = input(f"What are you changing '{value}' to? : \n>")
+
+                update_customer = f"""
+                UPDATE
+                  customer
+                SET
+                  {modify} = '{modified}'
+                WHERE
+                  {modify} = '{value}'
+                """
+                execute_query(connection, update_customer)
+
+                print(f"\n'{value}' has been modified to '{modified}' successfully.")
+
+            elif customer_choice == 3:
+                print("Here is the list of all your customers in your Customer Table.\n")
+                select_customers = "SELECT * from customer"
+                people = execute_read_query(connection, select_customers)
+
+                for person in people:
+                    print(person)
+
+            elif choice == 4:
+                print("Please enter the details of the customer you would like to delete.")
+                delete_last = input("last name : \n>")
+                delete_first = input("first name : \n>")
+
+                delete_customer = f'''
+                DELETE 
+                  customer
+                WHERE
+                  last = '{delete_last}',
+                  first = '{delete_first}'
+                '''
+                execute_query(connection, delete_customer)
+                print(f"{delete_first} {delete_last} has been deleted from the customer table.")
+
+    elif choice == 2:
+
+        book_menu = 0
+        while book_menu != 5:
+            print("Here is your Book Menu. What would you like to do?")
+            print("1. Add a new bookr")
+            print("2. Modify an existing book")
+            print("3. Print a list of all books")
+            print("4. Delete a book")
+            print("5. Return to Main Menu")
+            book_choice = int(input("\n>"))
+
+            if book_choice == 1:
+                # String holds the query to add data to the table
+                print("Please enter the details for the book you want to add:")
+                title = input("Title : \n>")
+                author = input("Author : \n>")
+                isbn = int(input("isbn : \n>"))
+                edition = int(input("Edition : \n>"))
+                price = int(input("Price : \n>"))
+                publisher = input("Publisher : \n>")
+
+                create_book = f"""
+                        INSERT INTO
+                          book(title, author, isbn, edition, price, publisher)
+                        VALUES
+                          ('{title}', '{author}', '{isbn}', '{edition}', '{price}', '{publisher}')
+                           """
+                execute_query(connection, create_book)
+
+                print(f"{title} by {author} has been added to the Book table")
+
+            elif book_choice == 2:
+                print("Please enter the details for the book you want to modify.")
+                modify = input("Field to be modified : \n>")
+                value = input("What specific value are you modifying? (ex. Smith) : \n>")
+                modified = input(f"What are you changing '{value}' to? : \n>")
+
+                update_book = f"""
+                        UPDATE
+                          book
+                        SET
+                          {modify} = '{value}'
+                        WHERE
+                          {modify} = '{modified}'
+                        """
+                execute_query(connection, update_book)
+                print("Book has been modified successfully.")
+
+            elif book_choice == 3:
+                print("Here is the list of all your book in your Book Table.\n")
+                select_books = "SELECT * from customer"
+                book = execute_read_query(connection, select_books)
+
+                for book in book:
+                    print(book)
+
+            elif book_choice == 4:
+                print("Please enter the details of the book you would like to delete.")
+                delete_book = input("Title : \n>")
+
+                delete_customer = f'''
+                        DELETE 
+                          customer
+                        WHERE
+                          title = '{delete_book}'
+                        '''
+                execute_query(connection, delete_customer)
+                print(f"{delete_book}  has been deleted from the customer table.")
