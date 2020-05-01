@@ -53,8 +53,6 @@ CREATE TABLE IF NOT EXISTS customer (
 );
 """
 
-
-print("\nRun the query to create the customer table:")
 execute_query(connection, create_customer_table)
 
 create_book_table = """
@@ -69,7 +67,6 @@ CREATE TABLE IF NOT EXISTS book (
 );
 """
 
-print("\nRun the query to create the book table:")
 execute_query(connection, create_book_table)
 
 option = 0
